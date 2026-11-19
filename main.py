@@ -1,5 +1,7 @@
 import asyncio
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+import sys
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from fastapi import FastAPI, HTTPException
 from fastapi.openapi.docs import get_swagger_ui_html
@@ -12,7 +14,6 @@ load_dotenv()
 app = FastAPI(docs_url=None)
 app.openapi_version = "3.0.0"   # 新增这行，让 Swagger UI 能识别
 
-from fastapi.openapi.docs import get_swagger_ui_html
 
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
@@ -38,6 +39,10 @@ class GenerateResponse(BaseModel):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/")
+def root():
+    return {"message": "AI 文案生成服务已启动", "docs": "/docs", "health": "/health"}
 
 @app.post("/generate", response_model=GenerateResponse)
 def generate_text(req: GenerateRequest):
